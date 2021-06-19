@@ -1,0 +1,50 @@
+---
+
+  - name: enable service mariadb.
+    systemd:
+      name: mariadb
+      enabled: yes
+    delegate_to: "{{ item }}"
+
+  - name: start the db servers
+    systemd: state=started name=mariadb
+    delegate_to: "{{ item }}"
+  
+  - name: set permissions for apache
+    shell: 
+      cmd: |
+        mysql_secure_installation <<EOF
+  
+         y
+         {{ROOT_PASSWORD}}
+         {{ROOT_PASSWORD}}
+         y
+         y
+         y
+         y
+         EOF
+    delegate_to: "{{ item }}"
+
+  - name: Create a new database with name 'wikidatabase'
+    mysql_db:
+      name: "{{ mediawiki_db_name }}"
+      state: present
+      login_user: root
+      login_password: '{{ ROOT_PASSWORD }}'
+    delegate_to: "{{ item }}"
+
+  - name: Create MediaWiki User and provide all permissions.
+    mysql_user:
+      name: "{{ mediawiki_db_user }}"
+      password: "{{ WIKI_DB_PASSWORD }} "
+      host:  '%'
+      priv: '{{ mediawiki_db_name }}.*:ALL,GRANT'
+      state: present
+      login_user: root
+      login_password: '{{ ROOT_PASSWORD }}'
+    delegate_to: "{{ item }}"
+
+  - name: Confirmation on Creation.
+    shell: 'mysql -u root -p{{ ROOT_PASSWORD }} --execute="SHOW DATABASES;"'
+    register: db_list
+    delegate_to: "{{ item }}"

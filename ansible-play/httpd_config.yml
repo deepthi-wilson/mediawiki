@@ -1,0 +1,2 @@
+httpd_root_dir: "/opt/rh/httpd24/root/var/www"
+httpd_directory_index: "index.html  index.html.var index.php"

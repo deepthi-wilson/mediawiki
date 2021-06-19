@@ -1,0 +1,9 @@
+# Specify Deployment Region
+region: "us-east-2"
+
+# Specify Deployment VPC ID
+ec2_user: "centos"
+key_file: "deepthi"
+s3_key_file_path: "deepthiwilson/key"
+ec2_instance_name: "mediawiki-instance1"
+ec2_instance_project_tag: "mediawiki"

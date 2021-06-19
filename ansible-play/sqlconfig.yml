@@ -1,0 +1,3 @@
+mediawiki_db_name: "wikidatabase"
+ROOT_PASSWORD: "secret"
+mediawiki_db_user: "wiki"

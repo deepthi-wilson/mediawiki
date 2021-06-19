@@ -1,0 +1,16 @@
+---
+# tasks file for mysql
+- block:
+
+  - name: Include Localized Variable File(s)
+    include_vars: "{{ item }}"
+    with_items:
+       "{{ role_vars }}"
+
+  - include: mysql.yml
+ #   delegate_to: "{{ item }}"
+#    with_items:
+ #    - "{{ groups.mediawiki }}"
+    loop: "{{ groups['mediawiki'] }}"
+
+

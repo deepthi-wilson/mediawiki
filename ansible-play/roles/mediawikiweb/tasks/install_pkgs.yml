@@ -1,0 +1,95 @@
+---
+- name: Add EPEL
+  yum: 
+    name: "epel-release"
+    state: present
+  delegate_to: "{{ item }}"
+
+- name: Install remi rpm
+  yum:
+    name: http://rpms.famillecollet.com/enterprise/remi-release-7.rpm
+    state: present
+  become: true
+  delegate_to: "{{ item }}"
+
+- name: Install packages for mediawiki
+  yum:
+    name: "{{ web_pkgs }}"
+    state: present
+  become: true
+  delegate_to: "{{ item }}"
+
+- name: Install package from remi-php73
+  yum:
+    name: "{{ remi_pkgs }}"
+    enablerepo: "remi-php73"
+  delegate_to: "{{ item }}"
+
+
+- name: check php version
+  command: php -version && msql --version && httpd -version
+  delegate_to: "{{ item }}"
+
+
+- name: start the web server
+  systemd: state=started name=httpd24-httpd enabled=true
+  delegate_to: "{{ item }}"
+
+- name: Download the MediaWiki Binary
+  get_url: 
+     url: "{{mediawiki_url}}"
+     dest: '/tmp/"{{mediawiki_version}}".tar.gz'
+     mode: 0644
+  delegate_to: "{{ item }}"
+
+- name: Download the Signature
+  get_url: 
+     url: '"{{mediawiki_url}}".sig'
+     dest: '/tmp/{{ mediawiki_version }}.tar.gz.sig'
+     mode: 0644
+  delegate_to: "{{ item }}"
+  
+- name: Verify Signature
+  command: gpg --verify /tmp/{{mediawiki_version}}.tar.gz.sig /tmp/{{mediawiki_version}}.tar.gz
+  ignore_errors: yes
+  delegate_to: "{{ item }}"
+
+
+- name: Extract /tmp/mediawiki.tar.gz  into /opt/rh/httpd24/root/var/www
+  unarchive:
+    src: /tmp/{{mediawiki_version}}.tar.gz
+    dest: /opt/rh/httpd24/root/var/www
+    remote_src: yes
+  delegate_to: "{{ item }}"
+
+- name: create a symlink for /opt/rh/httpd24/root/var/www/{{mediawiki_version}}/ to /opt/rh/httpd24/root/var/www/mediawiki
+  file: 
+   src: '/opt/rh/httpd24/root/var/www/{{mediawiki_version}}/'
+   dest: '/opt/rh/httpd24/root/var/www/mediawiki'
+   state: link
+  become: true
+  delegate_to: "{{ item }}"
+
+- name: Override httpd conf
+  template: 
+    src: ../templates/httpd.conf.j2
+    dest: /opt/rh/httpd24/root/etc/httpd/conf/httpd.conf
+  become: true
+  delegate_to: "{{ item }}"
+
+- name: set permissions for apache
+  command: chown -R apache:apache /opt/rh/httpd24/root/var/www/mediawiki
+  become: true 
+  delegate_to: "{{ item }}"
+
+
+- name: set permissions for apache
+  command: chown -R apache:apache /opt/rh/httpd24/root/var/www/{{mediawiki_version}}
+  become: true  
+  delegate_to: "{{ item }}"
+
+
+- name: restart httpd service
+  systemd: name=httpd24-httpd state=restarted
+  become: true
+  delegate_to: "{{ item }}"

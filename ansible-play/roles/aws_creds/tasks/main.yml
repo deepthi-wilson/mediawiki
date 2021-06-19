@@ -1,0 +1,55 @@
+---
+# tasks file for aws_creds
+- block:
+  - name: Include Localized Variable File(s)
+    include_vars: "{{ item }}"
+    with_items:
+       "{{ role_vars }}"
+       
+  - name: AWS STS Session
+    # Get a session token (more details: http://docs.aws.amazon.com/STS/latest/APIReference/API_GetSessionToken.html)
+    sts_session_token:
+      duration_seconds: 3600
+    register: target_creds
+
+
+
+  - name: Setting Environment Vars
+    set_fact:
+       environment_vars:
+              AWS_ACCESS_KEY_ID: "{{ target_creds.sts_creds.access_key }}"
+              AWS_SECRET_ACCESS_KEY: "{{ 
+                target_creds.sts_creds.secret_key }}"
+              AWS_SECURITY_TOKEN: "{{ target_creds.sts_creds.session_token }}"
+
+
+
+  - name: Copy .pem File From S3
+    command: "aws s3 cp s3://{{ s3_key_file_path }}/{{key_file}}.pem {{ role_path}}/files/{{key_file}}.pem --region {{region}}"
+    environment: "{{ environment_vars }}"
+
+  - name: chmod 600
+    command: find  {{ role_path}}/files/{{key_file}}.pem -type f -exec chmod -c 0600 {} \;
+  
+  - name: Retrieve instance-ip
+    command: >
+            aws ec2 describe-instances
+            --region "{{ region }}"
+            --filter Name=tag:Name,Values={{ ec2_instance_name }}
+                     Name=tag:Project,Values={{ ec2_instance_project_tag }}
+    register: result
+    environment: "{{ environment_vars }}"
+
+  - set_fact:
+      result_json: "{{ result.stdout | from_json }}"
+  - set_fact:
+      instance_ip: "{{ result_json.Reservations[0].Instances[0].PublicIpAddress }}"
+
+  - debug: msg="Running update now for Instance ( {{ instance_ip }} )"
+  - name: add mediawiki instance group to local inventory
+    add_host : name={{item}}
+               groups=mediawiki
+               ansible_ssh_private_key_file={{ role_path }}/files/{{ key_file }}.pem
+               ansible_user="{{ec2_user}}"
+               ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+    with_items: "{{ instance_ip }}"

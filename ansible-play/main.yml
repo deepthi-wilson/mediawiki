@@ -1,0 +1,8 @@
+  
+- name: MediaWiki Web and Mysql
+  hosts: localhost
+
+  roles:
+    - { role: aws_creds, role_vars: ["config.yml","web_config.yml", "httpd_config.yml"] }
+    - { role: mediawikiweb, role_vars: ["config.yml","web_config.yml", "httpd_config.yml"] }
+    - { role: mysql, role_vars: ["sqlconfig.yml"] }   
