@@ -78,7 +78,7 @@
     delegate_to: "{{ item }}"
     when: "check_login.stderr == ''"
 
-  - name: Confirmation on Creation.
+  - name: Show DB
     shell: 'mysql -u root -p{{ mediawiki_db_pwd }} --execute="SHOW DATABASES;"'
     register: db_list
     delegate_to: "{{ item }}"
@@ -94,3 +94,7 @@
     systemd: name=httpd24-httpd state=restarted
     become: true
     delegate_to: "{{ item }}"
+
+  - name: Installation Wizard
+    debug: 
+       msg: "Click here to finish MediaWiki Installation - http://{{item}}/mediawiki/"

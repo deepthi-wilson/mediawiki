@@ -1,9 +1,13 @@
+#Download mediawiki setup url
 mediawiki_url: https://releases.wikimedia.org/mediawiki/1.36/mediawiki-1.36.0.tar.gz
+#Version details
 mediawiki_version: mediawiki-1.36.0
+# 3rd party repo
 epel:
   - centos-release-scl
   - epel-release
 
+#Required Packages for Apache , PHP and MySQL
 web_pkgs:
  - python-pip
  - httpd24-httpd
@@ -18,5 +22,6 @@ web_pkgs:
  - mariadb-server
  - mariadb
 
+# Required pkg from remi repo
 remi_pkgs:
  - php

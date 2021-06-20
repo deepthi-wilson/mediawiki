@@ -1,9 +1,12 @@
 # Specify Deployment Region
 region: "us-east-2"
-
-# Specify Deployment VPC ID
+# the user with which ansible ssh and runs tasks
 ec2_user: "centos"
+# ssh key file for the instance
 key_file: "deepthi"
+# S3 Path where the pem file resides 
 s3_key_file_path: "deepthiwilson/key"
+# Name of the MediaWiki instance also Tag
 ec2_instance_name: "mediawiki-instance1"
+# Project Tag for the instance
 ec2_instance_project_tag: "mediawiki"

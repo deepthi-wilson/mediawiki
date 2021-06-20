@@ -3,6 +3,6 @@
   hosts: localhost
 
   roles:
-    - { role: aws_creds, role_vars: ["config.yml","web_config.yml", "httpd_config.yml"] }
-    - { role: mediawikiweb, role_vars: ["config.yml","web_config.yml", "httpd_config.yml"] }
+    - { role: aws_creds, role_vars: ["config.yml"] }
+    - { role: mediawikiweb, role_vars: ["web_config.yml", "httpd_config.yml"] }
     - { role: mysql, role_vars: ["sqlconfig.yml"] }   

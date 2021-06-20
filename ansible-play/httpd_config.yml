@@ -1,2 +1,4 @@
+#Root Dir where the php files reside
 httpd_root_dir: "/opt/rh/httpd24/root/var/www"
+#Loads the files to the MediaWiki 
 httpd_directory_index: "index.html  index.html.var index.php"

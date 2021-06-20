@@ -1,5 +1,5 @@
 ---
-- name: Add EPEL
+- name: Add 3rd party repos
   yum: 
     name: "{{epel}}"
     state: present
@@ -13,14 +13,14 @@
   become: true
   delegate_to: "{{ item }}"
 
-- name: Install package from remi-php73
+- name: Install package from remi-php73 for PHP from remi repo
   yum:
     name: "{{ remi_pkgs }}"
     enablerepo: "remi-php73"
   become: true
   delegate_to: "{{ item }}"
 
-- name: Install packages for mediawiki
+- name: Install packages for mediawiki Apache and PHP
   yum:
     name: "{{ web_pkgs }}"
     state: present
@@ -28,7 +28,7 @@
   delegate_to: "{{ item }}"
 
 - name: check php version
-  command: php -version && msql --version && httpd -version
+  command: php -version
   delegate_to: "{{ item }}"
 
 
@@ -73,7 +73,7 @@
   become: true
   delegate_to: "{{ item }}"
 
-- name: Override httpd conf
+- name: Override httpd conf with jinja file template
   template: 
     src: ../templates/httpd.conf.j2
     dest: /opt/rh/httpd24/root/etc/httpd/conf/httpd.conf
@@ -95,4 +95,13 @@
 - name: restart httpd service
   systemd: name=httpd24-httpd state=restarted
   become: true
+  delegate_to: "{{ item }}"
+
+    
+- name: Firewall settings
+  command: "{{item}}"
+  become: true
+  with_items:
+        - restorecon -FR /opt/rh/httpd24/root/var/www/{{mediawiki_version}}/
+        - restorecon -FR /opt/rh/httpd24/root/var/www/medawiki
   delegate_to: "{{ item }}"

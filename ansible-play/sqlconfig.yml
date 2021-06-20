@@ -1,7 +1,11 @@
+#MySQL db Name 
 mediawiki_db_name: "wikidatabase"
+#MYSQL Db pwd to secure mysql installation
 mediawiki_db_pwd: "secret"
+#MySQL username
 mediawiki_db_user: "wiki"
 
+#Pkgs required for mysql
 mysql_pkg:
    - python-devel
    - mysql-devel

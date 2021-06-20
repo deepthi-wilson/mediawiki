@@ -1,9 +1,6 @@
-
-data "aws_caller_identity" "current" {}
-
-output "account_id" {
-  value = data.aws_caller_identity.current.id
-}
+################################################################################################
+####                              Fetches the Public Subnet                          ###########
+################################################################################################
 
 data "aws_subnet" "subnet" {
   vpc_id      = "${var.vpc_id}"
@@ -17,6 +14,9 @@ output "subnet" {
 }
 
 
+###############################################################################################
+####    Creates Security Group for the MediaWiki instance with ingress and egress   ###########
+###############################################################################################
 resource "aws_security_group" "security_group" {
   name        = lower("${var.application_name}-${var.application_environment}-rds-sg-test")
   description = lower("${var.application_name}-${var.application_environment}-rds")
@@ -48,6 +48,10 @@ resource "aws_security_group" "security_group" {
   }
 }
 
+###############################################################################################
+######             Fetches the Latest CENTOS AMI from Amazon Market Place           ###########
+###############################################################################################
+
 data "aws_ami" "centos" {
 owners      = ["aws-marketplace"]
 most_recent = true
@@ -67,6 +71,12 @@ most_recent = true
       values = ["ebs"]
   }
 }
+
+
+###############################################################################################
+######       Creates the MediaWiki Instance with given instance type and keypair    ###########
+###############################################################################################
+
 
 resource "aws_instance" "mediwiki" {
   ami = "${data.aws_ami.centos.id}"
