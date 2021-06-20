@@ -1,3 +1,8 @@
 mediawiki_db_name: "wikidatabase"
-ROOT_PASSWORD: "secret"
+mediawiki_db_pwd: "secret"
 mediawiki_db_user: "wiki"
+
+mysql_pkg:
+   - python-devel
+   - mysql-devel
+   - gcc

@@ -45,6 +45,14 @@
   - set_fact:
       instance_ip: "{{ result_json.Reservations[0].Instances[0].PublicIpAddress }}"
 
+  - name: Wait for the Instance to be up and Running
+    wait_for:
+        host: "{{item}}"
+        port: 22
+        timeout: 100
+        state: started
+    with_items:  "{{ instance_ip }}"
+    
   - debug: msg="Running update now for Instance ( {{ instance_ip }} )"
   - name: add mediawiki instance group to local inventory
     add_host : name={{item}}

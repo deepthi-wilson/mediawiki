@@ -1,14 +1,22 @@
 ---
 - name: Add EPEL
   yum: 
-    name: "epel-release"
+    name: "{{epel}}"
     state: present
+  become: true   
   delegate_to: "{{ item }}"
 
 - name: Install remi rpm
   yum:
     name: http://rpms.famillecollet.com/enterprise/remi-release-7.rpm
     state: present
+  become: true
+  delegate_to: "{{ item }}"
+
+- name: Install package from remi-php73
+  yum:
+    name: "{{ remi_pkgs }}"
+    enablerepo: "remi-php73"
   become: true
   delegate_to: "{{ item }}"
 
@@ -19,13 +27,6 @@
   become: true
   delegate_to: "{{ item }}"
 
-- name: Install package from remi-php73
-  yum:
-    name: "{{ remi_pkgs }}"
-    enablerepo: "remi-php73"
-  delegate_to: "{{ item }}"
-
-
 - name: check php version
   command: php -version && msql --version && httpd -version
   delegate_to: "{{ item }}"
@@ -33,19 +34,20 @@
 
 - name: start the web server
   systemd: state=started name=httpd24-httpd enabled=true
+  become: true
   delegate_to: "{{ item }}"
 
 - name: Download the MediaWiki Binary
   get_url: 
      url: "{{mediawiki_url}}"
-     dest: '/tmp/"{{mediawiki_version}}".tar.gz'
+     dest: "/tmp/{{mediawiki_version}}.tar.gz"
      mode: 0644
   delegate_to: "{{ item }}"
 
 - name: Download the Signature
   get_url: 
-     url: '"{{mediawiki_url}}".sig'
-     dest: '/tmp/{{ mediawiki_version }}.tar.gz.sig'
+     url: "{{mediawiki_url}}.sig"
+     dest: "/tmp/{{ mediawiki_version }}.tar.gz.sig"
      mode: 0644
   delegate_to: "{{ item }}"
   
@@ -60,6 +62,7 @@
     src: /tmp/{{mediawiki_version}}.tar.gz
     dest: /opt/rh/httpd24/root/var/www
     remote_src: yes
+  become: true
   delegate_to: "{{ item }}"
 
 - name: create a symlink for /opt/rh/httpd24/root/var/www/{{mediawiki_version}}/ to /opt/rh/httpd24/root/var/www/mediawiki

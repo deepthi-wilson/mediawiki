@@ -1,9 +1,11 @@
-mediawiki_url: https://releases.mediawiki.org/mediawiki/1.36/mediawiki-1.36.0.tar.gz
+mediawiki_url: https://releases.wikimedia.org/mediawiki/1.36/mediawiki-1.36.0.tar.gz
 mediawiki_version: mediawiki-1.36.0
+epel:
+  - centos-release-scl
+  - epel-release
+
 web_pkgs:
  - python-pip
- - epel-release
- - centos-release-scl
  - httpd24-httpd
  - wget
  - rh-php73

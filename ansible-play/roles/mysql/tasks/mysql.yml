@@ -1,50 +1,96 @@
 ---
+  - name: Add mysql pkg
+    yum: 
+      name: "{{mysql_pkg}}"
+      state: present
+    become: true   
+    delegate_to: "{{ item }}"
+
+  - name: Installing mysql-python
+    pip:
+      name: mysql-python
+    become: true   
+    delegate_to: "{{ item }}"
 
   - name: enable service mariadb.
     systemd:
       name: mariadb
       enabled: yes
+    become: true
     delegate_to: "{{ item }}"
 
   - name: start the db servers
     systemd: state=started name=mariadb
+    become: true
     delegate_to: "{{ item }}"
-  
-  - name: set permissions for apache
+
+  - name: Is mysql secured
+    shell: 
+      cmd: |
+          mysql -u root -p{{mediawiki_db_pwd}} -e "select 1*1"
+    register: check_login
+    delegate_to: "{{ item }}"
+    ignore_errors: yes
+
+      
+  - name: Execute mysql_secure_installation
     shell: 
       cmd: |
         mysql_secure_installation <<EOF
   
          y
-         {{ROOT_PASSWORD}}
-         {{ROOT_PASSWORD}}
+         {{mediawiki_db_pwd}}
+         {{mediawiki_db_pwd}}
          y
          y
          y
          y
          EOF
     delegate_to: "{{ item }}"
+    when: "'Access denied for user' in check_login.stderr"
+
+  - name: Is mysql secured
+    shell: 
+      cmd: |
+          mysql -u root -p{{mediawiki_db_pwd}} -e "select 1*1"
+    register: check_login
+    delegate_to: "{{ item }}"
+    ignore_errors: yes
 
   - name: Create a new database with name 'wikidatabase'
     mysql_db:
       name: "{{ mediawiki_db_name }}"
       state: present
       login_user: root
-      login_password: '{{ ROOT_PASSWORD }}'
+      login_password: '{{ mediawiki_db_pwd }}'
     delegate_to: "{{ item }}"
+    when: "check_login.stderr == ''"
 
   - name: Create MediaWiki User and provide all permissions.
     mysql_user:
       name: "{{ mediawiki_db_user }}"
-      password: "{{ WIKI_DB_PASSWORD }} "
+      password: "{{ mediawiki_db_pwd }} "
       host:  '%'
       priv: '{{ mediawiki_db_name }}.*:ALL,GRANT'
       state: present
       login_user: root
-      login_password: '{{ ROOT_PASSWORD }}'
+      login_password: '{{ mediawiki_db_pwd }}'
     delegate_to: "{{ item }}"
+    when: "check_login.stderr == ''"
 
   - name: Confirmation on Creation.
-    shell: 'mysql -u root -p{{ ROOT_PASSWORD }} --execute="SHOW DATABASES;"'
+    shell: 'mysql -u root -p{{ mediawiki_db_pwd }} --execute="SHOW DATABASES;"'
     register: db_list
+    delegate_to: "{{ item }}"
+
+   
+  - name: restart mariadb service
+    systemd: name=mariadb state=restarted
+    become: true
+    delegate_to: "{{ item }}"
+
+
+  - name: restart httpd service
+    systemd: name=httpd24-httpd state=restarted
+    become: true
     delegate_to: "{{ item }}"
