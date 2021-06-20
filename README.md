@@ -46,8 +46,8 @@ You Should be seeing as Below
 -----------------------------
 
 - Post run above stacks - Launch Wizard for SetUp completion
-![Launch](img/homepage.PNG)
+![done ](img/installation.png)
 
 
 - Done!
-![done ](img/installation.png)
+![Launch](img/homepage.PNG)
