@@ -99,9 +99,11 @@
 
     
 - name: Firewall settings
-  command: "{{item}}"
+  command: restorecon -FR /opt/rh/httpd24/root/var/www/{{mediawiki_version}}/
   become: true
-  with_items:
-        - restorecon -FR /opt/rh/httpd24/root/var/www/{{mediawiki_version}}/
-        - restorecon -FR /opt/rh/httpd24/root/var/www/medawiki
+  delegate_to: "{{ item }}"
+
+- name: Firewall settings for mediawiki ln
+  command: restorecon -FR /opt/rh/httpd24/root/var/www/mediawiki
+  become: true
   delegate_to: "{{ item }}"
